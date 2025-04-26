@@ -1,21 +1,12 @@
 const fs = require("node:fs").promises;
-const path = require("node:path");
 const fg = require("fast-glob");
 const getMovieIds = require("../common/get-movie-ids");
 const getDataPath = require("../common/get-data-path");
+const extractFromFiles = require("../common/extract-from-files");
 
 async function getLocalMovieIds() {
   const files = await fg("data/**/*.json");
-  const ids = [];
-  for (const filePath of files) {
-    const rawData = await fs.readFile(
-      path.join(process.cwd(), filePath),
-      "utf8",
-    );
-    const data = JSON.parse(rawData);
-    ids.push(data.id);
-  }
-  return ids;
+  return await extractFromFiles(files, ({ id }) => id);
 }
 
 async function deleteFilesFor(ids) {

@@ -1,16 +1,9 @@
-const path = require("node:path");
-const fs = require("node:fs").promises;
 const fg = require("fast-glob");
-const {
-  parseISO,
-  format,
-  isAfter,
-  differenceInDays,
-  subDays,
-} = require("date-fns");
+const { format, isAfter, differenceInDays, subDays } = require("date-fns");
 const { MovieDb } = require("moviedb-promise");
 const fetchMovieData = require("../common/fetch-movie-data");
 const { dailyCache } = require("../common/cache");
+const extractFromFiles = require("../common/extract-from-files");
 
 require("dotenv").config();
 
@@ -18,19 +11,18 @@ const moviedb = new MovieDb(process.env.MOVIEDB_API_KEY);
 
 async function getLatestDate() {
   const files = await fg("data/**/*.json");
-  let latestDate = subDays(new Date(), 15);
-  for (const filePath of files) {
-    const rawData = await fs.readFile(
-      path.join(process.cwd(), filePath),
-      "utf8",
-    );
-    const data = JSON.parse(rawData);
-    const retrievedAt = parseISO(data.retrievedAt);
-    if (isAfter(retrievedAt, latestDate)) {
-      latestDate = retrievedAt;
-    }
-  }
-  return latestDate;
+  const retrievedAtDates = await extractFromFiles(
+    files,
+    ({ retrievedAt }) => retrievedAt,
+  );
+  const latestRetrievedAtDate = retrievedAtDates.reduce(
+    (latestDate, retrievedAt) =>
+      isAfter(retrievedAt, latestDate) ? retrievedAt : latestDate,
+    subDays(new Date(), 15),
+  );
+
+  // Go back one more day, just in case
+  return subDays(latestRetrievedAtDate, 1);
 }
 
 async function getMovieIds(latestDate) {
@@ -49,7 +41,7 @@ async function getMovieIds(latestDate) {
 }
 
 async function main() {
-  console.log("Scanning files to determine last retrieval date...");
+  console.log("Scanning files to determine last retrieval date ...");
   const latestDate = await getLatestDate();
   console.log(` - Found latest request date ${latestDate}`);
   const updatePeriod = differenceInDays(new Date(), latestDate);

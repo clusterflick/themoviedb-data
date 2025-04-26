@@ -17,9 +17,9 @@ jobs:
         with:
           node-version-file: .node-version
       - run: npm install
-      - run: npm run update-data # Update for any changes since last run
-      # - run: npm run prune-data  # Remove any IDs which were deleted
-      # - uses: EndBug/add-and-commit@v9
-      #   with:
-      #     add: 'data'
-      #     message: 'Update TMDB data'
+      - run: npm run prune-data  # Remove any IDs which aren't in the ID release
+      - run: npm run update-data # Get all changes since last run
+      - uses: EndBug/add-and-commit@v9
+        with:
+          add: 'data'
+          message: 'Update TMDB data'
