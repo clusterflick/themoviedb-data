@@ -1,4 +1,5 @@
 const path = require("node:path");
+const fs = require("node:fs").promises;
 const fg = require("fast-glob");
 const { parseISO, format, isBefore, differenceInDays } = require("date-fns");
 const { MovieDb } = require("moviedb-promise");
@@ -11,11 +12,19 @@ const moviedb = new MovieDb(process.env.MOVIEDB_API_KEY);
 
 async function getEarliestDate() {
   const files = await fg("data/**/*.json");
-  return files.reduce((earliestDate, filePath) => {
-    const data = require(path.join(process.cwd(), filePath));
+  let earliestDate = new Date();
+  for (const filePath of files) {
+    const rawData = await fs.readFile(
+      path.join(process.cwd(), filePath),
+      "utf8",
+    );
+    const data = JSON.parse(rawData);
     const retrievedAt = parseISO(data.retrievedAt);
-    return isBefore(retrievedAt, earliestDate) ? retrievedAt : earliestDate;
-  }, new Date());
+    if (isBefore(retrievedAt, earliestDate)) {
+      earliestDate = retrievedAt;
+    }
+  }
+  return earliestDate;
 }
 
 async function getMovieIds(earliestDate) {
@@ -34,7 +43,9 @@ async function getMovieIds(earliestDate) {
 }
 
 async function main() {
+  console.log("Scanning files to determine last retrieval date...");
   const earliestDate = await getEarliestDate();
+  console.log(` - Found earliest date ${earliestDate}`);
   const updatePeriod = differenceInDays(new Date(), earliestDate);
   console.log(
     `Requesting updates from the last ${updatePeriod} day${updatePeriod === 1 ? "" : "s"}`,
@@ -45,7 +56,7 @@ async function main() {
   const movieIds = await getMovieIds(earliestDate);
   console.log(`Getting latest data for ${movieIds.length} movies\n`);
 
-  fetchMovieData(movieIds);
+  await fetchMovieData(movieIds);
 }
 
 main().catch(console.error);

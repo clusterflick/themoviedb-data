@@ -3,7 +3,7 @@ const fetchMovieData = require("../common/fetch-movie-data");
 
 async function main() {
   const movieIds = await getMovieIds();
-  fetchMovieData(movieIds);
+  await fetchMovieData(movieIds);
 }
 
 main().catch(console.error);
