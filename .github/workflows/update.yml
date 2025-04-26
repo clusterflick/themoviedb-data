@@ -1,7 +1,11 @@
 on:
   workflow_dispatch:
-  # schedule:
-    # - cron: "0 10 * * *" # every morning at 10am UTC after new IDs are released
+  schedule:
+    # Every morning at 10am after new IDs are released
+    # "export job runs every day ... and all files are available by 8:00 AM UTC"
+    # Ref: https://developer.themoviedb.org/docs/daily-id-exports
+    - cron: "0 11 * * *"
+
 
 name: Update Data
 
