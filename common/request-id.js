@@ -25,9 +25,9 @@ function requestId(id) {
       const retrievedAt = new Date().toISOString();
       try {
         const response = await moviedb.movieInfo({ id, ...parameters });
-        return { id, parameters, retrievedAt, response };
+        return { id, retrievedAt, response };
       } catch (error) {
-        throw { id, parameters, retrievedAt, error };
+        throw { id, retrievedAt, error };
       }
     },
     getDataPath,

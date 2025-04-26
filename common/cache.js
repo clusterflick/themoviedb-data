@@ -2,20 +2,6 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { format } = require("date-fns");
 
-const cacheStats = {
-  misses: [],
-  hits: [],
-};
-
-function getCacheStats() {
-  return cacheStats;
-}
-
-function clearCacheStats() {
-  cacheStats.misses = [];
-  cacheStats.hits = [];
-}
-
 function getCachePath(filename) {
   return path.join(process.cwd(), "cache", filename);
 }
@@ -54,7 +40,7 @@ function writeCache(filename, value, getPath) {
   setupCacheDirectory(path.dirname(writePath));
   let data;
   try {
-    data = JSON.stringify(value, null, 2);
+    data = JSON.stringify(value);
   } catch {
     data = value;
   }
@@ -65,11 +51,9 @@ async function cache(key, retrieve, getPath = getCachePath) {
   let data;
   if (checkCache(key, getPath)) {
     data = readCache(key, getPath);
-    cacheStats.hits.push(key);
   } else {
     data = await retrieve();
     writeCache(key, data, getPath);
-    cacheStats.misses.push(key);
   }
   return data;
 }
@@ -85,8 +69,6 @@ function readDailyCache(key) {
 }
 
 module.exports = {
-  clearCacheStats,
-  getCacheStats,
   getCachePath,
   cache,
   dailyCache,
