@@ -1,0 +1,25 @@
+on:
+  workflow_dispatch:
+  # schedule:
+    # - cron: "0 10 * * *" # every morning at 10am UTC after new IDs are released
+
+name: Update Data
+
+jobs:
+  update_and_commit:
+    name: Update data and commit
+    runs-on: ubuntu-latest
+    env:
+      MOVIEDB_API_KEY: ${{ secrets.MOVIEDB_API_KEY }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: .node-version
+      - run: npm install
+      - run: npm run update-data # Update for any changes since last run
+      # - run: npm run prune-data  # Remove any IDs which were deleted
+      # - uses: EndBug/add-and-commit@v9
+      #   with:
+      #     add: 'data'
+      #     message: 'Update TMDB data'
