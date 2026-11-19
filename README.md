@@ -1,7 +1,7 @@
 # themoviedb-data
 
 > **[Clusterflick](https://clusterflick.com)** is a free, open-source site
-> listing every film showing in London, from 450+ venues in one search.
+> listing every film showing in London, from 500+ venues in one search.
 >
 > This repository is tooling for downloading The Movie Database (TMDB)
 > catalogue, so it can be explored and experimented with offline. See the
